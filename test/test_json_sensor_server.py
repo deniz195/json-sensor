@@ -14,11 +14,6 @@ def test_json_sensor_server():
 
 
     class DataReader(Service):
-        # @Service.timer(5.0)
-        # async def interfere(self):
-        #     await json_sensor_server.crash(RuntimeError('Something went wrong... Hehehe...'))
-        #     self.log.info('poll')
-
         async def handle_data(self, sender, data={}, aggregated_data={}, **kwds):
             self.log.info(f'DataReader: Aggregated data is now: {repr(aggregated_data)}')
             
