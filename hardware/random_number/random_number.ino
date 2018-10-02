@@ -1,4 +1,4 @@
-/* Random number sensor 
+/* Random number sensor
  *  
  *  Implements a dummy sensor that complies with the json-sensor requirements 
  *  
@@ -14,11 +14,15 @@ void setup() {
 }
 
 long rand_number;
+#define SENSOR_GUID "0x12345"
 
 void loop() {
   // put your main code here, to run repeatedly:
   rand_number = random(1000);
-  Serial.print("{\"value\": ");
+  Serial.print("{");
+  Serial.print("\"guid\": \"");
+  Serial.print(SENSOR_GUID);
+  Serial.print("\", \"value\": ");
   Serial.print(rand_number);
   Serial.println("}");
   delay(1000);      

@@ -31,13 +31,13 @@ class JanusLineReader(LineReader):
 
     def connection_made(self, transport):
         super(JanusLineReader, self).connection_made(transport)
-        # self.parent.log.debug(f'port opened ({self.parent.dev_path}, thread {threading.get_ident()})')
+        # self.parent.log.debug(f'port opened ({self.parent.device}, thread {threading.get_ident()})')
         self.parent.read_queue_sync.put(EventConnectionMade())
 
         # self.write_line('hello world')
 
     def handle_line(self, data):
-        # self.parent.log.debug(f'({self.parent.dev_path}): line received: {repr(data)} (thread {threading.get_ident()})')
+        # self.parent.log.debug(f'({self.parent.device}): line received: {repr(data)} (thread {threading.get_ident()})')
         data_wrap = SerialData({'data_raw': data})
         self.parent.read_queue_sync.put(data_wrap)
 
@@ -55,10 +55,10 @@ class RobustSerialService(Service):
     on_connection_made: SignalT = Signal()
     on_connection_lost: SignalT = Signal()
 
-    def __init__(self, dev_path, baudrate=115200, timeout=1, protocol_factory=JanusLineReader, **kwargs) -> None:
+    def __init__(self, device, baudrate=115200, timeout=1, protocol_factory=JanusLineReader, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        self.dev_path = dev_path
+        self._device = device
         self.baudrate = baudrate
         self.timeout = timeout
 
@@ -80,7 +80,7 @@ class RobustSerialService(Service):
     async def on_start(self):
         self.log.info(f'RobustSerialService on_start in thread {threading.get_ident()}')
 
-        ser = serial.serial_for_url(self.dev_path, baudrate=self.baudrate, timeout=self.timeout)       
+        ser = serial.serial_for_url(self.device, baudrate=self.baudrate, timeout=self.timeout)       
         self.reader_thread = self.add_context(ReaderThread(ser, self.make_bound_parser))
 
     async def on_stop(self) -> None:
@@ -111,13 +111,18 @@ class RobustSerialService(Service):
                 self.log.debug(f'async thread {threading.get_ident()}: EventConnectionLost')
                 await self.on_connection_lost.send()
 
+    @property
+    def device(self):
+        return self._device
+
+
 
 def test_robust_serial():
     from mode import Worker
 
     supervisor = OneForOneSupervisor()
     connection = RobustSerialService(\
-            dev_path = '/dev/ttyACM0',
+            device = '/dev/ttyACM0',
             baudrate = 9600,
             timeout = 10,
             protocol_factory = JanusLineReader

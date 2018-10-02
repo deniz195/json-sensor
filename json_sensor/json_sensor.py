@@ -6,16 +6,30 @@ import json
 
 import serial
 
-from robust_serial_service import *
+from json_sensor.robust_serial_service import *
 
 
 class JsonSensor(RobustSerialService):
+
+    async def on_start(self):
+        await super().on_start()
+        self.has_valid_data = False
+
+    @Service.timer(3.0)
+    async def check_validity(self):
+        if not self.has_valid_data:
+            await self.crash(RuntimeError('This sensor does not deliver valid data in time!'))
+        # reset
+        self.has_valid_data = False
+
     async def transform_data(self, data_raw):
         ''' override this fuction in a subclass to refine data analysis '''
         super_data = await super().transform_data(data_raw)
 
         try:
             parsed_data = json.loads(super_data)
+            self.last_data = parsed_data
+            self.has_valid_data = True
         except BaseException as e:
             self.logger.exception(e)
             parsed_data = dict()
@@ -81,7 +95,7 @@ def test_json_sensor():
 
     supervisor = OneForOneSupervisor()
     connection = JsonSensor(\
-            dev_path = '/dev/ttyACM0',
+            device = '/dev/ttyACM0',
             baudrate = 9600,
             timeout = 10
         )
