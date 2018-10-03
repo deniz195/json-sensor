@@ -52,9 +52,11 @@ class USBSerialServer(Service):
 
     async def grep_ports(self):
         ports = []
+        # self.log.debug(f'greps: {self.port_greps}')
         for regex in self.port_greps:
             ports += list_ports.grep(regex)
 
+        # self.log.debug(repr(ports))
         return ports
 
     def get_port_hash(self, port_info):
@@ -143,6 +145,7 @@ class USBSerialServer(Service):
 
     @Service.timer(1.0)
     async def check_for_new_ports(self):
+        self.log.debug('check_for_new_ports')
         await self.remove_unknown_ports()
 
         all_ports = await self.grep_ports()

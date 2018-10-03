@@ -14,6 +14,7 @@ class JsonSensor(RobustSerialService):
     async def on_start(self):
         await super().on_start()
         self.has_valid_data = False
+        self.skipped_first_line = False
 
     @Service.timer(3.0)
     async def check_validity(self):
@@ -26,14 +27,19 @@ class JsonSensor(RobustSerialService):
         ''' override this fuction in a subclass to refine data analysis '''
         super_data = await super().transform_data(data_raw)
 
-        try:
-            parsed_data = json.loads(super_data)
-            self.last_data = parsed_data
-            self.has_valid_data = True
-        except BaseException as e:
-            self.logger.exception(e)
-            parsed_data = dict()
-            parsed_data['error'] = repr(e)
+        if self.skipped_first_line:
+            try:
+                parsed_data = json.loads(super_data)
+                self.last_data = parsed_data
+                self.has_valid_data = True
+            except BaseException as e:
+                self.logger.exception(e)
+                parsed_data = dict()
+                parsed_data['error'] = repr(e)
+        else:
+            self.skipped_first_line = True
+            self.log.debug('Skipping first (possibly) incomplete line!')
+            parsed_data = None
 
         return parsed_data
 

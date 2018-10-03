@@ -9,7 +9,7 @@ def test_json_sensor_server():
 
     supervisor = OneForOneSupervisor()
     json_sensor_server = JsonSensorServer(\
-            port_greps = ['Arduino']
+            port_greps = ['Arduino', 'Trinket M0']
         )
 
 
@@ -24,7 +24,7 @@ def test_json_sensor_server():
     supervisor.add(data_reader)
 
     # Worker(supervisor, loglevel="debug").execute_from_commandline()
-    Worker(supervisor, loglevel="debug").execute_from_commandline()
+    Worker(supervisor, loglevel="info").execute_from_commandline()
 
 if __name__ == '__main__':
     test_json_sensor_server()

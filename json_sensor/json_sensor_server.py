@@ -32,15 +32,16 @@ class JsonSensorServer(USBSerialServer):
 
     async def handle_data(self, sender, data={}, **kwds):
         # self.log.info('Got data: ' + repr(data))
-        if 'guid' in data:
-            sensor_guid = data['guid']
-        else:
-            sensor_guid = sender.device
+        if data is not None:
+            if 'guid' in data:
+                sensor_guid = data['guid']
+            else:
+                sensor_guid = sender.device
 
-        self.agg_data[sensor_guid] = data       
-        self.log.debug(f'Got data: sender guid: {sensor_guid} data: {repr(data)}')
+            self.agg_data[sensor_guid] = data       
+            self.log.debug(f'Got data: sender guid: {sensor_guid} data: {repr(data)}')
 
-        await self.on_data_update.send(data = data, aggregated_data = self.aggregated_data)
+            await self.on_data_update.send(data = data, aggregated_data = self.aggregated_data)
 
     @property
     def aggregated_data(self):
