@@ -33,7 +33,7 @@ class JsonSensor(RobustSerialService):
                 self.last_data = parsed_data
                 self.has_valid_data = True
             except BaseException as e:
-                self.logger.exception(e)
+                self.logger.debug('Data from sensor creates error: ' + str(repr(e)))
                 parsed_data = dict()
                 parsed_data['error'] = repr(e)
         else:

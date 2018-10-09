@@ -1,3 +1,4 @@
+from mode import Service, OneForOneSupervisor
 from json_sensor.robust_serial_service import *
 from json_sensor.json_sensor import *
 from json_sensor.serial_server import *
@@ -16,6 +17,7 @@ class JsonSensorServer(USBSerialServer):
 
         self.agg_data = {}
         self.on_data_update = self.on_data_update.with_default_sender(self)
+        self.sensor_supervisor = OneForOneSupervisor(max_restarts = 3, over = 30)
 
 
     async def json_sensor_factory(self, port_info):
@@ -27,6 +29,7 @@ class JsonSensorServer(USBSerialServer):
             )
 
         connection.on_data.connect(self.handle_data)
+        self.sensor_supervisor.add(connection)
         return connection
 
 

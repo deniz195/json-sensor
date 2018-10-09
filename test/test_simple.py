@@ -8,7 +8,7 @@ from mode import Worker
 async def handle_data(sender, data={}, aggregated_data={}, **kwds):
     print(f'Aggregated data is now: {repr(aggregated_data)}')
 
-json_sensor_server = JsonSensorServer(port_greps = ['Arduino', 'Adafruit_Industries_Trinket'])
+json_sensor_server = JsonSensorServer(port_greps = ['Arduino', 'Adafruit_Industries_Trinket', 'Trinket'])
 json_sensor_server.on_data_update.connect(handle_data)
 
 Worker(json_sensor_server, loglevel="debug").execute_from_commandline()

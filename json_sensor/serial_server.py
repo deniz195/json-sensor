@@ -22,8 +22,6 @@ from json_sensor.json_sensor import *
 
 
 
-
-
 async def default_port_reader_factory(port_info):
     print(f'default_port_reader_factory on {port_info.device}')
     connection = RobustSerialService(\
