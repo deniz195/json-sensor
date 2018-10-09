@@ -1,3 +1,4 @@
+import asyncio
 from mode import Service, OneForOneSupervisor
 from json_sensor.robust_serial_service import *
 from json_sensor.json_sensor import *
@@ -18,6 +19,8 @@ class JsonSensorServer(USBSerialServer):
         self.agg_data = {}
         self.on_data_update = self.on_data_update.with_default_sender(self)
         self.sensor_supervisor = OneForOneSupervisor(max_restarts = 3, over = 30)
+
+        self.subscribers = []
 
 
     async def json_sensor_factory(self, port_info):
@@ -45,11 +48,27 @@ class JsonSensorServer(USBSerialServer):
             self.log.debug(f'Got data: sender guid: {sensor_guid} data: {repr(data)}')
 
             await self.on_data_update.send(data = data, aggregated_data = self.aggregated_data)
+            await self.send_to_subscribers(sensor_guid, data)
 
     @property
     def aggregated_data(self):
         return self.agg_data
 
+    def create_subscriber_queue(self, sensor_guid = None, data_name = None, max_items = 5):
+         new_queue = asyncio.Queue(max_items)
+         new_subscriber = dict(sensor_guid=sensor_guid, data_name=data_name, queue = new_queue)
+         self.subscribers += [new_subscriber]
+
+         return new_queue
+
+    async def send_to_subscribers(self, sensor_guid, data):
+        for sub in self.subscribers:
+            if not sub['sensor_guid'] or sub['sensor_guid'] == sensor_guid:
+                if not sub['data_name']:
+                    # if no data_name is given, send the whole thing!
+                    sub['queue'].put_nowait(data)
+                elif sub['data_name'] in data:
+                    sub['queue'].put_nowait(data[sub['data_name']])
 
 
 
