@@ -5,6 +5,22 @@ from json_sensor.json_sensor import *
 from json_sensor.serial_server import *
 
 
+
+__global_json_sensor_server = None
+
+def get_server():
+    global __global_json_sensor_server
+    return __global_json_sensor_server
+
+def initialize_server(*args, **kwds):
+    global __global_json_sensor_server
+    __global_json_sensor_server = JsonSensorServer(*args, **kwds)
+    return __global_json_sensor_server
+
+
+
+
+
 class JsonSensorServer(USBSerialServer):
     on_data_update: SignalT = Signal()
 
@@ -62,13 +78,18 @@ class JsonSensorServer(USBSerialServer):
          return new_queue
 
     async def send_to_subscribers(self, sensor_guid, data):
+        def put_to_possibly_full_queue(queue, data):
+            if queue.full():
+                queue.get_nowait()
+            queue.put_nowait(data)
+
         for sub in self.subscribers:
             if not sub['sensor_guid'] or sub['sensor_guid'] == sensor_guid:
                 if not sub['data_name']:
                     # if no data_name is given, send the whole thing!
-                    sub['queue'].put_nowait(data)
+                    put_to_possibly_full_queue(sub['queue'], data)
                 elif sub['data_name'] in data:
-                    sub['queue'].put_nowait(data[sub['data_name']])
+                    put_to_possibly_full_queue(sub['queue'], data[sub['data_name']])
 
 
 

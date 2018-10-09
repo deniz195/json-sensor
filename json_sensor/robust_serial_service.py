@@ -44,7 +44,7 @@ class JanusLineReader(LineReader):
     def connection_lost(self, exc):
         if exc:
             self.parent.log.exception(exc)
-            self.parent.crash(exc)
+            # await self.parent.crash(exc)
         self.parent.read_queue_sync.put(EventConnectionLost())
         # self.parent.log.debug('port closed')
 
@@ -110,6 +110,7 @@ class RobustSerialService(Service):
             elif type(data) == EventConnectionLost:
                 self.log.debug(f'async thread {threading.get_ident()}: EventConnectionLost')
                 await self.on_connection_lost.send()
+                await self.parent.crash(RuntimeError('Connection lost!'))
 
     @property
     def device(self):
