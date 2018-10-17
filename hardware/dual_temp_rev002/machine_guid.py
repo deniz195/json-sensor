@@ -1,0 +1,1 @@
+guid = 'btrn-temp-sensor-000001'
