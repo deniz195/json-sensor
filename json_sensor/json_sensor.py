@@ -1,3 +1,4 @@
+import time 
 import threading
 import logging
 import asyncio
@@ -19,7 +20,7 @@ class JsonSensor(RobustSerialService):
     @Service.timer(3.0)
     async def check_validity(self):
         if not self.has_valid_data:
-            await self.crash(RuntimeError('This sensor does not deliver valid data in time!'))
+            await self.crash(RuntimeError(f'This sensor ({self.device})does not deliver valid data in time!'))
         # reset
         self.has_valid_data = False
 
@@ -29,9 +30,12 @@ class JsonSensor(RobustSerialService):
 
         if self.skipped_first_line:
             try:
-                parsed_data = json.loads(super_data)
+                parsed_data = json.loads(super_data)                
                 self.last_data = parsed_data
                 self.has_valid_data = True
+
+                self.last_data['json_receive_time'] = time.time()
+
             except BaseException as e:
                 self.logger.debug('Data from sensor creates error: ' + str(repr(e)))
                 parsed_data = dict()
