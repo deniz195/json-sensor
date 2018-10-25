@@ -48,6 +48,19 @@ class USBSerialServer(Service):
         self.knowledge_timeout = 10
 
 
+    async def get_all_port_grepable(self):
+        ports = list_ports.grep('')
+        props = ['name', "description", 'hwid']
+
+        all_ports = [[port.__dict__[p]  for p in props] for port in ports]
+        all_ports = [' '.join(p) for p in all_ports]
+        
+        self.log.info('Known ports:')
+        for p in all_ports:
+            self.log.info(p)
+
+        return all_ports
+
     async def grep_ports(self):
         ports = []
         # self.log.debug(f'greps: {self.port_greps}')
