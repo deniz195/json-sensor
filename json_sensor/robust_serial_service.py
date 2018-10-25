@@ -118,6 +118,14 @@ class RobustSerialService(Service):
     def device(self):
         return self._device
 
+    @property
+    def shortlabel(self) -> str:
+        """Label used for logging."""
+        if self.device is not None:
+            return super().shortlabel + '-' + self.device
+        return super().shortlabel
+
+
 
 
 def test_robust_serial():
