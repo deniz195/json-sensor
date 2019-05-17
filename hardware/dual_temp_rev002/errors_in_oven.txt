@@ -1,0 +1,36 @@
+{ "guid": "btrn-temp-sensor-000003", "object_temp":  41.53, "die_temp":  78.53, "amb_temp":  81.78, "amb_relative_humidity":  2.91}
+Traceback (most recent call last):
+  File "main.py", line 44, in <module>
+  File "adafruit_sht31d.py", line 120, in temperature
+  File "adafruit_sht31d.py", line 107, in _data
+ReloadException: 
+soft reboot
+
+
+
+
+
+Traceback (most recent call last):
+  File "main.py", line 44, in <module>
+  File "adafruit_sht31d.py", line 120, in temperature
+  File "adafruit_sht31d.py", line 107, in _data
+ReloadException: 
+soft reboot
+
+
+
+
+
+
+{ "guid": "btrn-temp-sensor-000003", "object_temp":  70.03, "die_temp":  78.34, "amb_temp":  81.17, "amb_relative_humidity":  2.99}
+Traceback (most recent call last):
+  File "main.py", line 44, in <module>
+  File "adafruit_sht31d.py", line 120, in temperature
+  File "adafruit_sht31d.py", line 109, in _data
+  File "adafruit_sht31d.py", line 109, in _data
+  File "adafruit_bus_device/i2c_device.py", line 86, in readinto
+OSError: [Errno 5] EIO
+
+
+
+

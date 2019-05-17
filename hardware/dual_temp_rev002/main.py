@@ -38,35 +38,48 @@ obj_temp = 0
 amb_temperature = 0
 amb_relative_humidity = 0
 
+last_exception = None
+
 while True:
-  die_temp += sensor_tmp007.die_temperature
-  obj_temp += sensor_tmp007.temperature
-  amb_temperature += sensor_sht31d.temperature
-  amb_relative_humidity += sensor_sht31d.relative_humidity  
+  try:
+    die_temp += sensor_tmp007.die_temperature
+    obj_temp += sensor_tmp007.temperature
+    amb_temperature += sensor_sht31d.temperature
+    amb_relative_humidity += sensor_sht31d.relative_humidity  
 
-  if i == averages - 1:
-    die_temp /= averages
-    obj_temp /= averages
-    amb_temperature /= averages
-    amb_relative_humidity /= averages
+    if i == averages - 1:
+      die_temp /= averages
+      obj_temp /= averages
+      amb_temperature /= averages
+      amb_relative_humidity /= averages
 
-    output = ""
-    output += '{'
-    output += ' "guid": "%s",' % machine_guid.guid
-    output += ' "object_temp":  %0.2f,' % obj_temp
-    output += ' "die_temp":  %0.2f,' % die_temp
-    output += ' "amb_temp":  %0.2f,' % amb_temperature
-    output += ' "amb_relative_humidity":  %0.2f' % amb_relative_humidity
-    output += '}'
+      output = ""
+      output += '{'
+      output += ' "guid": "%s",' % machine_guid.guid
+      output += ' "object_temp":  %0.2f,' % obj_temp
+      output += ' "die_temp":  %0.2f,' % die_temp
+      output += ' "amb_temp":  %0.2f,' % amb_temperature
+      output += ' "amb_relative_humidity":  %0.2f' % amb_relative_humidity
 
-    print(output)
-    ## check output against https://jsonlint.com/ --> OK
+      if last_exception is not None:
+        output += ', "last_exception": "%s"' % last_exception
 
-    die_temp = 0
-    obj_temp = 0
-    amb_temperature = 0
-    amb_relative_humidity = 0
+      output += '}'
 
-  i = (i + 1) %  averages
+      print(output)
+      ## check output against https://jsonlint.com/ --> OK
+
+      die_temp = 0
+      obj_temp = 0
+      amb_temperature = 0
+      amb_relative_humidity = 0
+
+    i = (i + 1) %  averages
+
+  except BaseException as e:
+    last_exception = str(repr(e))
+    last_exception = last_exception.replace('"', '\'').replace('\n', '') ## make JSON string save
+
+
 
   # time.sleep(loop_time)
