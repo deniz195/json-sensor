@@ -30,7 +30,8 @@ class JanusLineReader(LineReader):
         self._parent = value
 
     def connection_made(self, transport):
-        super(JanusLineReader, self).connection_made(transport)
+        # super(JanusLineReader, self).connection_made(transport)
+        super().connection_made(transport)
         # self.parent.log.debug(f'port opened ({self.parent.device}, thread {threading.get_ident()})')
         self.parent.read_queue_sync.put(EventConnectionMade())
 
@@ -78,7 +79,8 @@ class RobustSerialService(Service):
         return protocol
 
     async def on_start(self):
-        self.log.info(f'RobustSerialService on_start in thread {threading.get_ident()}')
+        # self.log.info(f'RobustSerialService: {self.device} in thread {threading.get_ident()}')
+        self.log.info(f'Starting on {self.device}')
 
         ser = serial.serial_for_url(self.device, baudrate=self.baudrate, timeout=self.timeout)       
         self.reader_thread = self.add_context(ReaderThread(ser, self.make_bound_parser))
@@ -110,11 +112,19 @@ class RobustSerialService(Service):
             elif type(data) == EventConnectionLost:
                 self.log.debug(f'async thread {threading.get_ident()}: EventConnectionLost')
                 await self.on_connection_lost.send()
-                await self.parent.crash(RuntimeError('Connection lost!'))
+                await self.crash(RuntimeError('Connection lost!'))
 
     @property
     def device(self):
         return self._device
+
+    @property
+    def shortlabel(self) -> str:
+        """Label used for logging."""
+        if self.device is not None:
+            return super().shortlabel + '-' + self.device
+        return super().shortlabel
+
 
 
 

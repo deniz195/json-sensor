@@ -1,3 +1,4 @@
+import time 
 import threading
 import logging
 import asyncio
@@ -15,11 +16,27 @@ class JsonSensor(RobustSerialService):
         await super().on_start()
         self.has_valid_data = False
         self.skipped_first_line = False
+        self.guid = None
+
+    @property
+    def shortlabel(self) -> str:
+        """Label used for logging."""
+        try:
+            if self.guid is not None:
+                return super().shortlabel + '-' + self.guid
+        except AttributeError:
+            pass
+
+        return super().shortlabel
+
 
     @Service.timer(3.0)
     async def check_validity(self):
         if not self.has_valid_data:
-            await self.crash(RuntimeError('This sensor does not deliver valid data in time!'))
+            # await self.crash(RuntimeError(f'This sensor ({self.device})does not deliver valid data in time!'))
+            self.log.warn(f'This sensor ({self.device}) does not deliver valid data in time!')
+            await self.stop()
+
         # reset
         self.has_valid_data = False
 
@@ -29,9 +46,16 @@ class JsonSensor(RobustSerialService):
 
         if self.skipped_first_line:
             try:
-                parsed_data = json.loads(super_data)
+                parsed_data = json.loads(super_data)                
                 self.last_data = parsed_data
                 self.has_valid_data = True
+
+                self.last_data['json_receive_time'] = time.time()
+
+                if self.guid is None and 'guid' in self.last_data:
+                    self.guid = self.last_data['guid']
+                    self.log.info(f'Sensor ({self.device}) has identified as {self.guid}!')
+
             except BaseException as e:
                 self.logger.debug('Data from sensor creates error: ' + str(repr(e)))
                 parsed_data = dict()
