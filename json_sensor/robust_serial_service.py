@@ -82,8 +82,12 @@ class RobustSerialService(Service):
         # self.log.info(f'RobustSerialService: {self.device} in thread {threading.get_ident()}')
         self.log.info(f'Starting on {self.device}')
 
-        ser = serial.serial_for_url(self.device, baudrate=self.baudrate, timeout=self.timeout)       
-        self.reader_thread = self.add_context(ReaderThread(ser, self.make_bound_parser))
+        try:
+            ser = serial.serial_for_url(self.device, baudrate=self.baudrate, timeout=self.timeout)       
+            self.reader_thread = self.add_context(ReaderThread(ser, self.make_bound_parser))
+        except BaseException as e:
+            self.log.warning(f'Problems opening port! Stopping! ({str(e)})')
+            await self.stop()
 
     async def on_stop(self) -> None:
         self.log.info('RobustSerialService on_stop')
