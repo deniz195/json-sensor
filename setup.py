@@ -13,7 +13,7 @@ with open('LICENSE') as f:
 
 setup(
     name='json-sensor',
-    version='0.1.0',
+    version='0.1.1',
     description='A mini-framework that helps to read data from sensors in a distributed system or machine.',
     long_description=readme,
     author='Deniz Bozyigit',
