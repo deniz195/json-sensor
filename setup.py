@@ -13,12 +13,13 @@ with open('LICENSE') as f:
 
 setup(
     name='json-sensor',
-    version='0.1.1',
+    version='0.1.3',
     description='A mini-framework that helps to read data from sensors in a distributed system or machine.',
     long_description=readme,
     author='Deniz Bozyigit',
     author_email='deniz195@gmail.com',
     url='https://github.com/deniz195/json-sensor',
     license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs')),
+    install_requires = ['mode', 'janus', 'pyserial'],
 )
